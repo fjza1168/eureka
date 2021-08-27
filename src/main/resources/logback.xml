@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <substitutionProperty name="applog.base" value="./logs/"/>
+    <substitutionProperty name="applog.name" value="eureka-service"/>
+
+    <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符
+
+                              value="%d{MM-dd HH:mm:ss.SSS}-[%thread] %logger{0}.%method[%F.%L]: %msg%n"/>
+                              value="%date{yyyy-MM-dd HH:mm:ss} | %highlight(%-5level) | %boldYellow(%thread) | %boldGreen(%logger) | %msg%n"/>
+
+
+    -->
+    <substitutionProperty name="applog.pattern"
+                          value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) --- [%boldGreen(%thread)] %cyan(%logger{0}.%method): %msg  %n"/>
+    <appender name="info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${applog.base}/${applog.name}_info.log</File>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${applog.pattern}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${applog.base}/${applog.name}_info.%d{yyyy-MM-dd}.%i.log.zip</FileNamePattern>
+            <maxFileSize>1000MB</maxFileSize>
+            <maxHistory>15</maxHistory>
+            <totalSizeCap>30GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Error Level -->
+    <appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${applog.base}/${applog.name}_error.log</File>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${applog.pattern}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${applog.base}/${applog.name}_error.%d{yyyy-MM-dd}.%i.log.zip</FileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>50</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 异步输出 -->
+    <appender name ="ASYNC" class= "ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold >0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>100000</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref ="info"/>
+    </appender>
+
+    <!-- 异步输出 -->
+    <appender name ="ASYNC_ERROR" class= "ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold >0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>100000</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref ="error"/>
+    </appender>
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${applog.pattern}</pattern>
+        </encoder>
+    </appender>
+
+
+    <logger name="java.sql" level="DEBUG">
+        <appender-ref ref="console"/>
+    </logger>
+
+    <root level="DEBUG">
+        <appender-ref ref="console"/>
+        <appender-ref ref="ASYNC"/>
+        <appender-ref ref="ASYNC_ERROR"/>
+    </root>
+</configuration>
